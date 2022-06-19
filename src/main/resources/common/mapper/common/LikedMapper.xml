@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kbj.callbus.api.common.mapper.LikedMapper">
+
+    <sql id="selectFrom">
+        SELECT 
+            `liked`.`board_id`, 
+            `liked`.`user_id`, 
+            `liked`.`created_date`,
+            `board`.`title`,
+            `member`.`nickname`
+        FROM 
+            `liked` `liked` 
+        LEFT JOIN
+            `board` `board`
+        ON 
+            `board`.`id` = `liked`.`board_id`
+        LEFT JOIN
+            `member` `member`
+        ON 
+            `member`.`id` = `liked`.`user_id`
+    </sql>
+
+    <sql id="where">
+        <where>
+            <if test="likedParamDto.userId != null">
+                AND `liked`.`user_id` = #{likedParamDto.userId}
+            </if>
+        </where>
+    </sql>
+
+    <resultMap id="likedResultMap" type="com.kbj.callbus.api.common.entity.LikedEntity">
+        <result property="boardId" column="board_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="createdDate" column="created_date"/>
+        <result property="title" column="title"/>
+        <result property="nickname" column="nickname"/>
+    </resultMap>
+
+    <select
+        id="selectLikedList"
+        parameterType="java.util.Map"
+        resultMap="likedResultMap"
+    >
+        <include refid="PageFragment.sortStart"/>
+        <include refid="selectFrom"/>
+        <include refid="where"/>
+        <include refid="PageFragment.sortEnd"/>
+        <include refid="PageFragment.limitOffset"/>
+    </select>
+
+    <select
+        id="selectLikedListCount"
+        parameterType="java.util.Map"
+        resultType="java.lang.Integer"
+    >
+        <include refid="PageFragment.countStart"/>
+        <include refid="selectFrom"/>
+        <include refid="where"/>
+        <include refid="PageFragment.countEnd"/>
+    </select>
+
+    <select
+        id="selectLiked"
+        parameterType="java.util.Map"
+        resultMap="likedResultMap"
+    >
+        <include refid="selectFrom"/>
+        WHERE
+            `liked`.`board_id` = #{boardId}
+        AND
+            `liked`.`user_id` = #{userId}
+    </select>
+
+    <insert id="insertLiked" parameterType="java.util.Map">
+        INSERT IGNORE  INTO `liked` (
+            `board_id`, 
+            `user_id`, 
+            `created_date`
+        ) VALUES (
+            #{likedEntity.boardId}, 
+            #{likedEntity.userId},
+            now() 
+        )
+    </insert>
+
+    <insert id="updateLiked" parameterType="java.util.Map">
+        INSERT INTO `liked` (
+            `board_id`, 
+            `user_id`, 
+            `created_date`
+        ) VALUES (
+            #{likedEntity.boardId}, 
+            #{likedEntity.userId},
+            now() 
+        )
+        ON DUPLICATE KEY UPDATE 
+            `board_id` = VALUES(`board_id`), 
+            `user_id` = VALUES(`user_id`),  
+            `created_date` = VALUES(`created_date`) 
+    </insert>
+
+    <delete id="deleteLiked" parameterType="java.util.Map">
+        DELETE FROM `liked`
+        WHERE
+            `liked`.`board_id` = #{boardId}
+        AND
+            `liked`.`user_id` = #{userId}
+    </delete>
+</mapper>

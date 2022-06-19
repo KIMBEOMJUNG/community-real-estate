@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kbj.callbus.api.common.mapper.MemberMapper">
+
+    <sql id="selectFrom">
+        SELECT 
+            `member`.`id`, 
+            `member`.`nickname`, 
+            `member`.`account_type`,
+            CASE
+                WHEN (`member`.`account_type` = 'LESSOR') THEN '임대인'
+                WHEN (`member`.`account_type` = 'REALTOR') THEN '공인 중개사'
+                WHEN (`member`.`account_type` = 'LESSEE') THEN '임차인'
+                ELSE '미정'
+            END AS `account_type_kor`, 
+            `member`.`account_id`,
+            `member`.`quit`
+        FROM 
+            `member` `member` 
+    </sql>
+
+    <sql id="where">
+        <where>
+        </where>
+    </sql>
+
+    <resultMap id="memberResultMap" type="com.kbj.callbus.api.common.entity.MemberEntity">
+        <result property="id" column="id"/>
+        <result property="nickname" column="nickname"/>
+        <result property="accountType" column="account_type"/>
+        <result property="accountTypeKor" column="account_type_kor"/>
+        <result property="accountId" column="account_id"/>
+        <result property="quit" column="quit"/>
+    </resultMap>
+
+    <select
+        id="selectMemberList"
+        parameterType="java.util.Map"
+        resultMap="memberResultMap"
+    >
+        <include refid="PageFragment.sortStart"/>
+        <include refid="selectFrom"/>
+        <include refid="where"/>
+        <include refid="PageFragment.sortEnd"/>
+        <include refid="PageFragment.limitOffset"/>
+    </select>
+
+    <select
+        id="selectMemberListCount"
+        parameterType="java.util.Map"
+        resultType="java.lang.Integer"
+    >
+        <include refid="PageFragment.countStart"/>
+        <include refid="selectFrom"/>
+        <include refid="where"/>
+        <include refid="PageFragment.countEnd"/>
+    </select>
+
+    <select
+        id="selectMember"
+        parameterType="java.util.Map"
+        resultMap="memberResultMap"
+    >
+        <include refid="selectFrom"/>
+        WHERE
+            `member`.`nickname` = #{nickname}
+    </select>
+
+    <insert id="insertMember" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `member` (
+            `nickname`, 
+            `account_type`, 
+            `account_id`, 
+            `quit`
+        ) VALUES (
+            #{memberEntity.nickname}, 
+            #{memberEntity.accountType}, 
+            #{memberEntity.accountId}, 
+            0
+        )
+    </insert>
+
+    <insert id="updateMember" parameterType="java.util.Map">
+        INSERT INTO `member` (
+            `id`, 
+            `nickname`, 
+            `account_type`, 
+            `account_id`, 
+            `quit`
+        ) VALUES (
+            #{memberEntity.id},
+            #{memberEntity.nickname}, 
+            #{memberEntity.accountType}, 
+            #{memberEntity.accountId}, 
+            0
+        )
+        ON DUPLICATE KEY UPDATE 
+            `nickname` = VALUES(`nickname`), 
+            `account_type` = VALUES(`account_type`),  
+            `account_id` = VALUES(`account_id`),
+            `quit` = VALUES(`quit`) 
+    </insert>
+
+    <delete id="deleteMember" parameterType="java.util.Map">
+        DELETE FROM `member`
+        WHERE 
+            `id` = #{id} 
+    </delete>
+</mapper>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kbj.callbus.api.common.mapper.BoardMapper">
+
+    <sql id="selectFrom">
+        SELECT 
+            `board`.`id`, 
+            `board`.`title`, 
+            `board`.`context`, 
+            `board`.`created_user_id`, 
+            `board`.`created_date`, 
+            `board`.`last_modified_date`,
+            `member`.`nickname`,
+            `member`.`account_type`,
+            CASE
+                WHEN (`member`.`account_type` = 'LESSOR') THEN '임대인'
+                WHEN (`member`.`account_type` = 'REALTOR') THEN '공인 중개사'
+                WHEN (`member`.`account_type` = 'LESSEE') THEN '임차인'
+                ELSE '미정'
+            END AS `account_type_kor`,
+            (SELECT count(*)  FROM `liked` WHERE `liked`.`board_id` = `board`.`id` ) AS liked_count
+        FROM 
+            `board` `board` 
+        LEFT JOIN
+            `member` `member`
+        ON
+            `member`.`id` = `board`.`created_user_id`
+    </sql>
+
+    <sql id="where">
+        <where>
+        </where>
+    </sql>
+
+    <resultMap id="boardResultMap" type="com.kbj.callbus.api.common.entity.BoardEntity">
+        <result property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="context" column="context"/>
+        <result property="createdUserId" column="created_user_id"/>
+        <result property="createdDate" column="created_date"/>
+        <result property="lastModifiedDate" column="last_modified_date"/>
+        <result property="nickname" column="nickname"/>
+        <result property="accountType" column="account_type"/>
+        <result property="accountTypeKor" column="account_type_kor"/>
+        <result property="likedCount" column="liked_count"/>
+    </resultMap>
+
+    <select
+        id="selectBoardList"
+        parameterType="java.util.Map"
+        resultMap="boardResultMap"
+    >
+        <include refid="PageFragment.sortStart"/>
+        <include refid="selectFrom"/>
+        <include refid="where"/>
+        <include refid="PageFragment.sortEnd"/>
+        <include refid="PageFragment.limitOffset"/>
+    </select>
+
+    <select
+        id="selectBoardListCount"
+        parameterType="java.util.Map"
+        resultType="java.lang.Integer"
+    >
+        <include refid="PageFragment.countStart"/>
+        <include refid="selectFrom"/>
+        <include refid="where"/>
+        <include refid="PageFragment.countEnd"/>
+    </select>
+
+    <select
+        id="selectBoard"
+        parameterType="java.util.Map"
+        resultMap="boardResultMap"
+    >
+        <include refid="selectFrom"/>
+        WHERE
+            `board`.`id` = #{id}
+    </select>
+
+    <insert id="insertBoard" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `board` (
+            `title`, 
+            `context`, 
+            `created_user_id`, 
+            `created_date`, 
+            `last_modified_date` 
+        ) VALUES (
+            #{boardEntity.title}, 
+            #{boardEntity.context}, 
+            #{boardEntity.createdUserId}, 
+            now(), 
+            now() 
+        )
+        
+    </insert>
+
+    <insert id="updateBoard" parameterType="java.util.Map">
+        INSERT INTO `board` (
+            `id`, 
+            `title`, 
+            `context`, 
+            `created_user_id`, 
+            `created_date`, 
+            `last_modified_date`  
+        ) VALUES (
+            #{boardEntity.id}, 
+            #{boardEntity.title}, 
+            #{boardEntity.context}, 
+            #{boardEntity.createdUserId}, 
+            now(), 
+            now() 
+        )
+        ON DUPLICATE KEY UPDATE 
+            `title` = VALUES(`title`), 
+            `context` = VALUES(`context`),  
+            `last_modified_date` = VALUES(`last_modified_date`) 
+    </insert>
+
+    <delete id="deleteBoard" parameterType="java.util.Map">
+        DELETE FROM `board`
+        WHERE 
+            `id` = #{id} 
+    </delete>
+</mapper>

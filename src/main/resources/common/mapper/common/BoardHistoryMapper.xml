@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kbj.callbus.api.common.mapper.BoardHistoryMapper">
+
+    <sql id="selectFrom">
+        SELECT 
+            `boardHistory`.`id`, 
+            `boardHistory`.`board_id`, 
+            `boardHistory`.`detail`, 
+            `boardHistory`.`type`, 
+            `boardHistory`.`created_date` 
+        FROM 
+            `board_history` `boardHistory` 
+    </sql>
+
+    <sql id="where">
+        <where>
+            <if test="boardHistoryParamDto.boardId != null">
+                AND `boardHistory`.`board_id` = #{boardHistoryParamDto.boardId}
+            </if>
+        </where>
+    </sql>
+
+    <resultMap id="boardHistoryResultMap" type="com.kbj.callbus.api.common.entity.BoardHistoryEntity">
+        <result property="id" column="id"/>
+        <result property="boardId" column="board_id"/>
+        <result property="detail" column="detail"/>
+        <result property="type" column="type"/>
+        <result property="createdDate" column="created_date"/>
+    </resultMap>
+
+    <select
+        id="selectBoardHistoryList"
+        parameterType="java.util.Map"
+        resultMap="boardHistoryResultMap"
+    >
+        <include refid="PageFragment.sortStart"/>
+        <include refid="selectFrom"/>
+        <include refid="where"/>
+        <include refid="PageFragment.sortEnd"/>
+        <include refid="PageFragment.limitOffset"/>
+    </select>
+
+    <select
+        id="selectBoardHistoryListCount"
+        parameterType="java.util.Map"
+        resultType="java.lang.Integer"
+    >
+        <include refid="PageFragment.countStart"/>
+        <include refid="selectFrom"/>
+        <include refid="where"/>
+        <include refid="PageFragment.countEnd"/>
+    </select>
+
+    <select
+        id="selectBoardHistory"
+        parameterType="java.util.Map"
+        resultMap="boardHistoryResultMap"
+    >
+        <include refid="selectFrom"/>
+        WHERE
+            `boardHistory`.`id` = #{id}
+    </select>
+
+    <insert id="insertBoardHistory" parameterType="java.util.Map">
+        INSERT INTO `board_history` (
+            `board_id`, 
+            `detail`, 
+            `type`, 
+            `created_date` 
+        ) VALUES (
+            #{boardHistoryEntity.boardId}, 
+            #{boardHistoryEntity.detail},
+            #{boardHistoryEntity.type}, 
+            now() 
+        )
+    </insert>
+
+    <insert id="updateBoardHistory" parameterType="java.util.Map">
+        INSERT INTO `board_history` (
+            `id`, 
+            `board_id`, 
+            `detail`, 
+            `type`, 
+            `created_date`
+        ) VALUES (
+            #{boardHistoryEntity.id}, 
+            #{boardHistoryEntity.boardId}, 
+            #{boardHistoryEntity.detail}, 
+            #{boardHistoryEntity.type}, 
+            now() 
+        )
+        ON DUPLICATE KEY UPDATE 
+            `board_id` = VALUES(`board_id`), 
+            `detail` = VALUES(`detail`),  
+            `type` = VALUES(`type`),
+            `created_date` = VALUES(`created_date`) 
+    </insert>
+
+    <delete id="deleteBoardHistory" parameterType="java.util.Map">
+        DELETE FROM `board_history`
+        WHERE 
+            `id` = #{id} 
+    </delete>
+</mapper>
