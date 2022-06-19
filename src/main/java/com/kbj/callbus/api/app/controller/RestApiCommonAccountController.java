@@ -36,7 +36,6 @@ public class RestApiCommonAccountController {
     @GetMapping(path = "/account/checkType")
     public int getAccountType(
         @RequestHeader("Authorization") String data) {
-                System.out.println("in get type data : " + data);
                 String[] type = data.split("\\s+");
                 if(type.length == 2) {
                     if(type[0] != null && type[0] != "") {
