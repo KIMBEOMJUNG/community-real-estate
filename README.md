@@ -1,4 +1,4 @@
-# callbuslab-assignment
+# COMMUNITY SYSTEM
 
 커뮤니티 REST API 서버 만들기
 
