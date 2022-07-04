@@ -1,6 +1,6 @@
 # callbuslab-assignment
 
-콜버스랩 백엔드 개발자 사전 과제 입니다.(과제. 커뮤니티 REST API 서버 만들기)
+커뮤니티 REST API 서버 만들기
 
 
 #### Back-end : Spring Boot 2.7
